@@ -14,33 +14,49 @@ import (
 )
 
 func main() {
-    path, search, output, extension, dive := readArguments()
-    document := getDocument(path)
+    args := parseArgs()
+    file := args["f"]
+    url := args["u"]
+    search := strings.Split(args["s"], ",")
+    download := args["d"] != ""
+    ext := args["e"]
+    level, err := strconv.Atoi(args["l"])
+    if err != nil {
+        level = 1
+    }
 
-    processDocument(document, path, search, output, extension, dive)
+    if (file == "" && url == "") || (file != "" && url != ""){
+        fmt.Println("Please provide a file (-f) or a url (-u) but not both")
+        os.Exit(1)
+    }
+
+    var path string
+    if (file != "") {
+        path = file
+    } else {
+        path = url
+    }
+
+    document := getDocument(file, url)
+    processDocument(document, path, search, download, ext, level)
 }
 
-func getDocument(path string) (document io.Reader){
-    if strings.HasPrefix(path, "FILE:") {
-        file, err := ioutil.ReadFile(path[5:])
+func getDocument(file, url string) (document io.Reader){
+    if (file != "") {
+        fileData, err := ioutil.ReadFile(file)
         if err != nil {
             log.Fatal(err)
         }
 
-        document = bytes.NewReader(file)
+        document = bytes.NewReader(fileData)
     } else {
-        resp, err := http.Get(path)
-        if err != nil {
-            log.Fatal(err)
-        }
-
-        document = resp.Body
+        document = sendGetRequest(url)
     }
 
     return
 }
 
-func processDocument(document io.Reader, url string, search []string, output, extension string, dive int) {
+func processDocument(document io.Reader, url string, search []string, download bool, extension string, level int) {
     tokenizer := html.NewTokenizer(document)
     for {
 
@@ -56,14 +72,17 @@ func processDocument(document io.Reader, url string, search []string, output, ex
                 if isAnchor {
                     for _, a := range token.Attr {
                         if a.Key == "href" && strings.Contains(a.Val, search[0]) {
-                            if (dive > 0) {
+                            if (level > 1) {
                                 doc := sendGetRequest(a.Val)
-                                processDocument(doc, a.Val, search[1:], output, extension, dive-1)
+                                if (len(search) > 1) {
+                                    search = search[1:]
+                                }
+                                processDocument(doc, a.Val, search, download, extension, level-1)
                             } else {
-                                if output == "download" {
+                                if download {
                                     downloadFile(url, a.Val, extension)
                                 } else {
-                                    fmt.Println(url + a.Val)
+                                    fmt.Println(a.Val)
                                 }
                                 break
                             }
@@ -72,42 +91,6 @@ func processDocument(document io.Reader, url string, search []string, output, ex
                 }
         }
     }
-}
-
-func sendGetRequest(url string) (doc io.Reader) {
-    resp, err := http.Get(url)
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    return resp.Body
-}
-
-func readArguments() (path string, search []string, output, extension string, dive int) {
-    if len(os.Args) < 2 {
-        fmt.Println("Please Provide a path (URL or FILE)")
-        log.Fatal()
-    }
-
-    path = os.Args[1]
-    if len(os.Args) > 2 {
-        search = strings.Split(os.Args[2], ",")
-    }
-    if len(os.Args) > 3 {
-        output = os.Args[3]
-    }
-    if len(os.Args) > 4 {
-        extension = os.Args[4]
-    }
-    if len(os.Args) > 5 {
-        var err error
-        dive, err = strconv.Atoi(os.Args[5])
-        if err != nil {
-            log.Fatal("Please Provide and integer for the dive count")
-        }
-    }
-
-    return
 }
 
 func downloadFile(url, downloadUrl, extension string) {

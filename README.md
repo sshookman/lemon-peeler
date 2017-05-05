@@ -10,5 +10,5 @@ go get github.com/sshookman/lemon-peeler
 
 Example Command - Downloads all of the [MagPi Magazines](https://www.raspberrypi.org/magpi/issues/) in PDF format
 ```
-lemon-peeler https://www.raspberrypi.org/magpi/issues/ pdf download
+lemon-peeler -u https://www.raspberrypi.org/magpi/issues/ -s pdf -d
 ```
