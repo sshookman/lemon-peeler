@@ -74,10 +74,11 @@ func processDocument(document io.Reader, url string, search []string, download b
                         if a.Key == "href" && strings.Contains(a.Val, search[0]) {
                             if (level > 1) {
                                 doc := sendGetRequest(a.Val)
+                                nextSearch := search
                                 if (len(search) > 1) {
-                                    search = search[1:]
+                                    nextSearch = search[1:]
                                 }
-                                processDocument(doc, a.Val, search, download, extension, level-1)
+                                processDocument(doc, a.Val, nextSearch, download, extension, level-1)
                             } else {
                                 if download {
                                     downloadFile(url, a.Val, extension)

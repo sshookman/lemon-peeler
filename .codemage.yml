@@ -1,0 +1,24 @@
+spells:
+- name: build
+  cmd: go install
+  options:
+  - ""
+- name: peel-magpi
+  cmd: lemon-peeler -u https://www.raspberrypi.org/magpi/issues/ -s pdf -d
+  options:
+  - ""
+- name: peel-ljpdf
+  cmd: lemon-peeler -f ~/Documents/Magazines/LinuxJournal/LJ-August-2017.html -s pdf-,spit2
+    -l 2 -d -e .pdf
+  options:
+  - ""
+- name: peel-ljepub
+  cmd: lemon-peeler -f ~/Documents/Magazines/LinuxJournal/LJ-August-2017.html -s epub-,spit2
+    -l 2 -d -e .epub
+  options:
+  - ""
+- name: peel-ljmobi
+  cmd: lemon-peeler -f ~/Documents/Magazines/LinuxJournal/LJ-August-2017.html -s mobi-,spit2
+    -l 2 -d -e .mobi
+  options:
+  - ""
