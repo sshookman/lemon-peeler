@@ -110,7 +110,7 @@ func downloadFile(url, downloadUrl, extension string) {
     defer response.Body.Close()
 
 
-    file, err := os.Create(url[strings.LastIndex(url, "/")+1:] + extension)
+    file, err := os.Create(downloadUrl[strings.LastIndex(downloadUrl, "/")+1:] + extension)
     if err != nil {
         log.Fatal(err)
     }
